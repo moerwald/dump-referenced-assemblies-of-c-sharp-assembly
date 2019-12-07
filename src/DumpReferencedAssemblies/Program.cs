@@ -1,4 +1,4 @@
-﻿using System;
+﻿using DumpReferencedAssemblies.DependencyResolver;
 
 namespace DumpReferencedAssemblies
 {
@@ -6,12 +6,12 @@ namespace DumpReferencedAssemblies
     {
         static void Main(string[] args)
         {
-            var resolver = new DependencyResolver.DependencyResolver();
-            resolver.Resolve(args[1]);
-            foreach(var ass in resolver.ResolvedAssemblies)
-            {
-                Console.WriteLine(ass);
-            }
+            var resolver = new DependencyResolver.DependencyResolver(new IndenPrinter());
+            resolver.Resolve(args[0]);
+            //foreach(var ass in resolver.ResolvedAssemblies)
+            //{
+            //    Console.WriteLine(ass);
+            //}
         }
     }
 }
