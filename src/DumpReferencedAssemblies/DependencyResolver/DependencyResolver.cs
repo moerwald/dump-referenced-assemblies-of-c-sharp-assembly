@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Reflection;
 
 namespace DumpReferencedAssemblies.DependencyResolver
@@ -24,34 +23,32 @@ namespace DumpReferencedAssemblies.DependencyResolver
                     return;
                 }
 
-                ++printer.Indent;
-                if (assemblies.Contains(path))
+                using (new AutoIndent(printer.Indent))
                 {
-                    // Break the recursion
+                    if (assemblies.Contains(path))
+                    {
+                        // Break the recursion
+                        printer.PrintPath(path);
+                        return;
+                    }
+
+                    var asm = Load(path);
+                    if (asm != null)
+                    {
+                        assemblies.Add(asm.FullName);
+                    }
                     printer.PrintPath(path);
-                    return;
-                }
 
-                var asm = Load(path);
-                if (asm != null)
-                {
-                    assemblies.Add(asm.FullName);
-                }
-                printer.PrintPath(path);
-
-                foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
-                {
-                    Resolve(referencedAssemblies.FullName);
+                    foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
+                    {
+                        Resolve(referencedAssemblies.FullName);
+                    }
                 }
             }
             catch
             {
                 printer.PrintPath(path);
                 failedAssemblies.Add(path);
-            }
-            finally
-            {
-                printer.Indent--;
             }
 
         }
