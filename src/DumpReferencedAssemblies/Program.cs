@@ -6,7 +6,15 @@ namespace DumpReferencedAssemblies
     {
         static void Main(string[] args)
         {
-            var resolver = new DependencyResolver.DependencyResolver(new IndenPrinter());
+            var printer = new IndenPrinter();
+            var resolver = new DependencyResolver.DependencyResolver(path =>
+            {
+                ++printer.Indent;
+                printer.PrintPath(path);
+
+            },
+            () => --printer.Indent);
+
             resolver.Resolve(args[0]);
         }
     }

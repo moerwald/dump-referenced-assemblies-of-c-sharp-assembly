@@ -1,18 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 
 namespace DumpReferencedAssemblies.DependencyResolver
 {
     public class DependencyResolver
     {
-        public DependencyResolver(IIndenPrinter printer) => this.printer = printer;
+        public DependencyResolver(Action<string> newElementDetected, Action movingBackToParentElement)
+        {
+
+            NewElementDetected = newElementDetected ?? throw new ArgumentNullException(nameof(newElementDetected));
+            MovingBackToParentElement = movingBackToParentElement ?? throw new ArgumentNullException(nameof(movingBackToParentElement));
+        }
 
         List<string> assemblies = new List<string>();
         private List<string> failedAssemblies = new List<string>();
 
         public List<string> ResolvedAssemblies { get => new List<string>(assemblies); }
-
-        private IIndenPrinter printer;
+        public Action<string> NewElementDetected { get; }
+        public Action MovingBackToParentElement { get; }
 
         public void Resolve(string path)
         {
@@ -23,34 +29,34 @@ namespace DumpReferencedAssemblies.DependencyResolver
                     return;
                 }
 
-                using (new AutoIndent(printer.Indent))
+                if (assemblies.Contains(path))
                 {
-                    if (assemblies.Contains(path))
-                    {
-                        // Break the recursion
-                        printer.PrintPath(path);
-                        return;
-                    }
+                    // Break the recursion
+                    NewElementDetected(path);
+                    return;
+                }
 
-                    var asm = Load(path);
-                    if (asm != null)
-                    {
-                        assemblies.Add(asm.FullName);
-                    }
-                    printer.PrintPath(path);
+                var asm = Load(path);
+                if (asm != null)
+                {
+                    assemblies.Add(asm.FullName);
+                }
+                NewElementDetected(path);
 
-                    foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
-                    {
-                        Resolve(referencedAssemblies.FullName);
-                    }
+                foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
+                {
+                    Resolve(referencedAssemblies.FullName);
                 }
             }
             catch
             {
-                printer.PrintPath(path);
+                NewElementDetected(path);
                 failedAssemblies.Add(path);
             }
-
+            finally
+            {
+                MovingBackToParentElement();
+            }
         }
 
         private static Assembly Load(string path)
