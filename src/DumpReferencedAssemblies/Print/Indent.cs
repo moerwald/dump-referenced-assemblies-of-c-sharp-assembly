@@ -1,4 +1,4 @@
-﻿namespace DumpReferencedAssemblies.DependencyResolver
+﻿namespace DumpReferencedAssemblies.DependencyResolver.Print
 {
     public class Indent
     {

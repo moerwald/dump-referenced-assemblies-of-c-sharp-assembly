@@ -1,21 +1,13 @@
 ﻿using DumpReferencedAssemblies.DependencyResolver;
+using DumpReferencedAssemblies.DependencyResolver.Print;
+using DumpReferencedAssemblies.Trace;
 
 namespace DumpReferencedAssemblies
 {
-    class Program
+    partial class Program
     {
-        static void Main(string[] args)
-        {
-            var printer = new IndenPrinter();
-            var resolver = new DependencyResolver.DependencyResolver(path =>
-            {
-                ++printer.Indent;
-                printer.PrintPath(path);
 
-            },
-            () => --printer.Indent);
-
-            resolver.Resolve(args[0]);
-        }
+        static void Main(string[] args) =>
+            new DependencyResolver.DependencyResolver(new DependencyTracing(new IndenPrinter())).Resolve(args[0]);
     }
 }

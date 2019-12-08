@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DumpReferencedAssemblies.Trace;
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 
@@ -6,19 +7,16 @@ namespace DumpReferencedAssemblies.DependencyResolver
 {
     public class DependencyResolver
     {
-        public DependencyResolver(Action<string> newElementDetected, Action movingBackToParentElement)
+        public DependencyResolver(DependencyTracing tracer)
         {
-
-            NewElementDetected = newElementDetected ?? throw new ArgumentNullException(nameof(newElementDetected));
-            MovingBackToParentElement = movingBackToParentElement ?? throw new ArgumentNullException(nameof(movingBackToParentElement));
+            Tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
         }
 
         List<string> assemblies = new List<string>();
         private List<string> failedAssemblies = new List<string>();
 
         public List<string> ResolvedAssemblies { get => new List<string>(assemblies); }
-        public Action<string> NewElementDetected { get; }
-        public Action MovingBackToParentElement { get; }
+        public DependencyTracing Tracer { get; }
 
         public void Resolve(string path)
         {
@@ -32,7 +30,7 @@ namespace DumpReferencedAssemblies.DependencyResolver
                 if (assemblies.Contains(path))
                 {
                     // Break the recursion
-                    NewElementDetected(path);
+                    Tracer.NewElemenFound(path);
                     return;
                 }
 
@@ -41,7 +39,7 @@ namespace DumpReferencedAssemblies.DependencyResolver
                 {
                     assemblies.Add(asm.FullName);
                 }
-                NewElementDetected(path);
+                Tracer.NewElemenFound(path);
 
                 foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
                 {
@@ -50,12 +48,12 @@ namespace DumpReferencedAssemblies.DependencyResolver
             }
             catch
             {
-                NewElementDetected(path);
+                Tracer.NewElemenFound(path);
                 failedAssemblies.Add(path);
             }
             finally
             {
-                MovingBackToParentElement();
+                Tracer.SearchingForNextParent();
             }
         }
 

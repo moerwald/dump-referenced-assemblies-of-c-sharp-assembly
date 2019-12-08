@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Linq;
 
-namespace DumpReferencedAssemblies.DependencyResolver
+namespace DumpReferencedAssemblies.DependencyResolver.Print
 {
     public class IndenPrinter : IIndenPrinter
     {
