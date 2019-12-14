@@ -4,6 +4,6 @@
     {
         void SearchingForChildElements();
         void SearchingForNextParent();
-        void NewElemenFound(string element);
+        void NewElemenFound(string element, string parent);
     }
 }

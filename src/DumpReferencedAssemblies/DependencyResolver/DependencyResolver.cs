@@ -7,7 +7,7 @@ namespace DumpReferencedAssemblies.DependencyResolver
 {
     public class DependencyResolver
     {
-        public DependencyResolver(DependencyTracing tracer)
+        public DependencyResolver(DependencyTracingPrinter tracer)
         {
             Tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
         }
@@ -16,9 +16,9 @@ namespace DumpReferencedAssemblies.DependencyResolver
         private List<string> failedAssemblies = new List<string>();
 
         public List<string> ResolvedAssemblies { get => new List<string>(assemblies); }
-        public DependencyTracing Tracer { get; }
+        public DependencyTracingPrinter Tracer { get; }
 
-        public void Resolve(string path)
+        public void Resolve(string path, string parent)
         {
             try
             {
@@ -30,7 +30,7 @@ namespace DumpReferencedAssemblies.DependencyResolver
                 if (assemblies.Contains(path))
                 {
                     // Break the recursion
-                    Tracer.NewElemenFound(path);
+                    Tracer.NewElemenFound(path, parent);
                     return;
                 }
 
@@ -39,16 +39,16 @@ namespace DumpReferencedAssemblies.DependencyResolver
                 {
                     assemblies.Add(asm.FullName);
                 }
-                Tracer.NewElemenFound(path);
+                Tracer.NewElemenFound(path, parent);
 
                 foreach (var referencedAssemblies in asm.GetReferencedAssemblies())
                 {
-                    Resolve(referencedAssemblies.FullName);
+                    Resolve(referencedAssemblies.FullName, path);
                 }
             }
             catch
             {
-                Tracer.NewElemenFound(path);
+                Tracer.NewElemenFound(path,parent);
                 failedAssemblies.Add(path);
             }
             finally
@@ -59,14 +59,14 @@ namespace DumpReferencedAssemblies.DependencyResolver
 
         private static Assembly Load(string path)
         {
-            Assembly asm;
+            System.Reflection.Assembly asm;
             if (path.Contains("/") || path.Contains("\\"))
             {
-                asm = Assembly.LoadFrom(path);
+                asm = System.Reflection.Assembly.LoadFrom(path);
             }
             else
             {
-                asm = Assembly.Load(path);
+                asm = System.Reflection.Assembly.Load(path);
             }
 
             return asm;
