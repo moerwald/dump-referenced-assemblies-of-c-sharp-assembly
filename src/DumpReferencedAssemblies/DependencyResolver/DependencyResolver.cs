@@ -7,16 +7,14 @@ namespace DumpReferencedAssemblies.DependencyResolver
 {
     public class DependencyResolver
     {
-        public DependencyResolver(DependencyTracingPrinter tracer)
-        {
-            Tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
-        }
+        public DependencyResolver(IDependencyTracing tracer)
+            => Tracer = tracer ?? throw new ArgumentNullException(nameof(tracer));
 
         List<string> assemblies = new List<string>();
         private List<string> failedAssemblies = new List<string>();
 
         public List<string> ResolvedAssemblies { get => new List<string>(assemblies); }
-        public DependencyTracingPrinter Tracer { get; }
+        public IDependencyTracing Tracer { get; }
 
         public void Resolve(string path, string parent)
         {

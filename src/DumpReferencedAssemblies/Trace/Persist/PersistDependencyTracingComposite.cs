@@ -1,4 +1,6 @@
-﻿using System;
+﻿using DumpReferencedAssemblies.JsonSerialization;
+using Newtonsoft.Json;
+using System;
 
 namespace DumpReferencedAssemblies.Trace.Persist
 {
@@ -13,7 +15,10 @@ namespace DumpReferencedAssemblies.Trace.Persist
 
         public void Persit()
         {
-            var converted = Newtonsoft.Json.JsonConvert.SerializeObject(DependencyTracingComposite.RootAsssembly);
+            var converted = JsonConvert.SerializeObject(
+                DependencyTracingComposite.RootAsssembly,
+                new JsonSerializerSettings { ContractResolver = new MyAssemblyContractResolver() });
+            Console.WriteLine(converted);
 
         }
 
